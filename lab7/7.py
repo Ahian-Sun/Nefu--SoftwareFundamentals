@@ -47,7 +47,8 @@ class Member:
         return self.__on_loan_books_list
 
     def borrow_book(self, book):
-        self.__on_loan_books_list.append(book.get_book_title())
+        if book.get_book_title() not in self.__on_loan_books_list:
+            self.__on_loan_books_list.append(book.get_book_title())
 
     def return_book(self, book):
         self.__on_loan_books_list.remove(book.get_book_title())
@@ -103,6 +104,8 @@ class MyLibrary:
     def __init__(self,file_name):
         self.__books_list = []
         self.__on_loan_records_list = []
+        self.all_records = []
+        self.data = []
         self.on_loan = []
         self.book_name = []
         self.book_id = []
@@ -138,6 +141,9 @@ class MyLibrary:
             member.borrow_book(book)
             book.borrow_book()
             self.__books_list.append(book)
+            self.data.append([book,member,issue_date])
+            self.__on_loan_records_list.append(Record(book,member,issue_date))
+            self.all_records.append(Record(book,member,issue_date))
         else:
             print("ERROR: could not issue the book.")
 
@@ -148,6 +154,33 @@ class MyLibrary:
 
     def find_record(self, code):
         if code in self.on_loan:
-            return Record()
+            for i in self.data:
+                if i[0].get_book_code() == code:
+                    return Record(i[0],i[1],i[2])
+        else:
+            return None
 
+    def return_book(self, record):
+        if record != None:
+            if record.get_book_code() in self.on_loan:
+                record.return_book()
+                self.on_loan.remove(record.get_book_code())
+                for i in self.__on_loan_records_list:
+                    if i.get_member_id() == record.get_member_id():
+                        if i.get_book_code() == record.get_book_code():
+                            if i.get_issue_date() == record.get_issue_date():
+                                self.__on_loan_records_list.remove(i)
+                print("{} is returned successfully.".format(record.get_book_code()))
+        else:
+            print("ERROR: could not return the book.")
+
+    def show_on_loan_records(self):
+        for i in self.__on_loan_records_list:
+            if i != None:
+                print(i)
+
+    def show_all_records(self):
+        for i in self.all_records:
+            if i != None:
+                print(i)
 
